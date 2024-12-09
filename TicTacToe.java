@@ -16,30 +16,41 @@ public class TicTacToe {
     }
     int currentPlayer = 1;
     JFrame frame = new JFrame("TicTacToe");
-    JPanel panel = new JPanel();
+    JPanel buttonPanel = new JPanel();
+    JLabel textLabel = new JLabel();
+    int textLabelHeight = 32;
 
     int rows = 3;  // rows = columns
     int clickTileSize = 100;
     int boardSize = (rows * clickTileSize) + 100 + ((rows - 1) * 50);
+    int frameHeight = boardSize + textLabelHeight;
     int moveCounter = 0;
     int[][] logicBoard = new int[rows][rows];
     String playerOne = "❌";
     String playerTwo = "⭕";
     boolean gameOver = false;
+    boolean tie = false;
 
     ClickTile[][] gameBoard = new ClickTile[rows][rows];
 
     TicTacToe() {
         clearLogicBoard();
-        frame.setSize(boardSize, boardSize);
+        frame.setSize(boardSize, frameHeight);
+        frame.setPreferredSize(new Dimension(boardSize, frameHeight));
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
-
         frame.setLayout(new BorderLayout());
 
-        panel.setLayout(new GridLayout(rows, rows));
-        frame.add(panel);
+        textLabel.setFont(new Font("Comic Sans", Font.PLAIN, 23));
+        frame.setPreferredSize(new Dimension(boardSize, textLabelHeight));
+        textLabel.setHorizontalAlignment(JLabel.CENTER);
+        textLabel.setText("Player " + Integer.toString(getRealPlayerNumber()) + "'s turn.");
+        textLabel.setOpaque(true);
+        frame.add(textLabel, BorderLayout.NORTH);
+
+        buttonPanel.setLayout(new GridLayout(rows, rows));
+        frame.add(buttonPanel, BorderLayout.CENTER);
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < rows; j++) {
@@ -69,12 +80,21 @@ public class TicTacToe {
                                     clickTile.setText(playerTwo);
                                 }
                                 gameOver = checkWinning();
+                                if (moveCounter == (rows * rows) - 1) {
+                                    gameOver = true;
+                                    tie = true;
+                                }
                                 if (!gameOver) {
                                     moveCounter++;
                                     swapPlayer();
+                                    textLabel.setText("Player " + Integer.toString(getRealPlayerNumber()) + "'s turn.");
                                 } else {
                                     // logic for winning/playing again
-                                    return;
+                                    if (tie) {
+                                        textLabel.setText("Game Over! It's a tie!");
+                                    } else {
+                                        textLabel.setText("Game Over! Player " + Integer.toString(getRealPlayerNumber()) + " won!");
+                                    }
                                 }
                             } else {
                                 return;
@@ -82,7 +102,7 @@ public class TicTacToe {
                         }
                     }
                 });
-                panel.add(clickTile);
+                buttonPanel.add(clickTile);
             }
         }
         frame.setVisible(true);
