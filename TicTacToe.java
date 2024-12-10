@@ -20,7 +20,7 @@ public class TicTacToe {
     JLabel textLabel = new JLabel();
     int textLabelHeight = 32;
 
-    int rows = 3;  // rows = columns
+    int rows = 3;  // columns = rows 
     int clickTileSize = 100;
     int boardSize = (rows * clickTileSize) + 100 + ((rows - 1) * 50);
     int frameHeight = boardSize + textLabelHeight;
@@ -95,6 +95,16 @@ public class TicTacToe {
                                     } else {
                                         textLabel.setText("Game Over! Player " + Integer.toString(getRealPlayerNumber()) + " won!");
                                     }
+                                    boolean againAnswer = againDialog(frame);
+                                    if (againAnswer) {
+                                        moveCounter = 0;
+                                        currentPlayer = 1;
+                                        gameOver = false;
+                                        clearLogicBoard();
+                                        clearGameBoard();
+                                    } else {
+                                        System.exit(0);
+                                    }
                                 }
                             } else {
                                 return;
@@ -112,6 +122,15 @@ public class TicTacToe {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < rows; j++) {
                 logicBoard[i][j] = 0;
+            }
+        }
+    }
+
+    void clearGameBoard() {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < rows; j++) {
+                gameBoard[i][j].setText("");
+                gameBoard[i][j].setEnabled(true);
             }
         }
     }
@@ -167,6 +186,38 @@ public class TicTacToe {
             }
         }
         return false;
+    }
+
+    private static boolean againDialog(JFrame parent) {
+        final boolean[] userChoice = {false};
+
+        JDialog dialog = new JDialog(parent, "Confirmation", true);
+        dialog.setSize(300, 150);
+        dialog.setLayout(new FlowLayout());
+
+        JLabel message = new JLabel("Play Again?");
+        dialog.add(message);
+
+        JButton yesButton = new JButton("Yes");
+        JButton noButton = new JButton("No");
+
+        yesButton.addActionListener(e -> {
+            userChoice[0] = true;
+            dialog.dispose();
+        });
+
+        noButton.addActionListener(e -> {
+            userChoice[0] = false;
+            dialog.dispose();
+        });
+
+        dialog.add(yesButton);
+        dialog.add(noButton);
+
+        dialog.setLocationRelativeTo(parent);
+        dialog.setVisible(true);
+
+        return userChoice[0];
     }
 
 }
