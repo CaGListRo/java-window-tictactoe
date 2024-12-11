@@ -5,36 +5,43 @@ import javax.swing.*;
 
 public class TicTacToe {
 
+    // Custom JButton class representing a single tile on the game board
     private class ClickTile extends JButton {
 
-        int row, col;
+        int row, col; // Position of the tile in the grid
 
         public ClickTile(int row, int col) {
             this.row = row;
             this.col = col;
         }
     }
-    int currentPlayer = 1;
-    JFrame frame = new JFrame("TicTacToe");
-    JPanel buttonPanel = new JPanel();
-    JLabel textLabel = new JLabel();
-    int textLabelHeight = 32;
 
-    int rows = 3;  // columns = rows 
-    int clickTileSize = 100;
+    // Variables for game state
+    int currentPlayer = 1; // 1 for player one, -1 for player two
+    JFrame frame = new JFrame("TicTacToe");
+    JPanel buttonPanel = new JPanel(); // Panel holding the game tiles
+    JLabel textLabel = new JLabel(); // Label displaying game status
+    int textLabelHeight = 32; // Height of the status label
+
+    // Board dimensions and other configurations
+    int rows = 3; // Number of rows and columns
+    int clickTileSize = 100; // Size of each tile
     int boardSize = (rows * clickTileSize) + 100 + ((rows - 1) * 50);
     int frameHeight = boardSize + textLabelHeight;
-    int moveCounter = 0;
-    int[][] logicBoard = new int[rows][rows];
-    String playerOne = "❌";
-    String playerTwo = "⭕";
+    int moveCounter = 0; // Counts the total number of moves
+    int[][] logicBoard = new int[rows][rows]; // Logical representation of the board
+    String playerOne = "\u274C"; // Player one's symbol (X)
+    String playerTwo = "\u2B55"; // Player two's symbol (O)
     boolean gameOver = false;
     boolean tie = false;
 
-    ClickTile[][] gameBoard = new ClickTile[rows][rows];
+    ClickTile[][] gameBoard = new ClickTile[rows][rows]; // Array of ClickTile buttons
 
+    // Constructor initializes the game
     TicTacToe() {
-        clearLogicBoard();
+        clearLogicBoard(); // Reset the logic board
+
+        // Configure the main game frame
         frame.setSize(boardSize, frameHeight);
         frame.setPreferredSize(new Dimension(boardSize, frameHeight));
         frame.setLocationRelativeTo(null);
@@ -42,16 +49,18 @@ public class TicTacToe {
         frame.setResizable(false);
         frame.setLayout(new BorderLayout());
 
+        // Configure the status label
         textLabel.setFont(new Font("Comic Sans", Font.PLAIN, 23));
-        frame.setPreferredSize(new Dimension(boardSize, textLabelHeight));
         textLabel.setHorizontalAlignment(JLabel.CENTER);
-        textLabel.setText("Player " + Integer.toString(getRealPlayerNumber()) + "'s turn.");
+        textLabel.setText("Player " + getRealPlayerNumber() + "'s turn.");
         textLabel.setOpaque(true);
         frame.add(textLabel, BorderLayout.NORTH);
 
+        // Configure the button panel with a grid layout
         buttonPanel.setLayout(new GridLayout(rows, rows));
         frame.add(buttonPanel, BorderLayout.CENTER);
 
+        // Initialize the game board tiles
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < rows; j++) {
                 ClickTile clickTile = new ClickTile(i, j);
@@ -60,7 +69,7 @@ public class TicTacToe {
                 clickTile.setFocusable(false);
                 clickTile.setMargin(new Insets(0, 0, 0, 0));
 
-                // actionlistener
+                // Add mouse listener for tile clicks
                 clickTile.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mousePressed(MouseEvent e) {
@@ -71,6 +80,7 @@ public class TicTacToe {
 
                         if (e.getButton() == MouseEvent.BUTTON1) {
                             if (logicBoard[clickTile.row][clickTile.col] == 0) {
+                                // Update logical board and display
                                 logicBoard[clickTile.row][clickTile.col] = currentPlayer;
                                 if (currentPlayer > 0) {
                                     clickTile.setFont(new Font("Arial Unicode MS", Font.PLAIN, 100));
@@ -79,22 +89,27 @@ public class TicTacToe {
                                     clickTile.setFont(new Font("Arial Unicode MS", Font.BOLD, 123));
                                     clickTile.setText(playerTwo);
                                 }
+
+                                // Check for win or tie
                                 gameOver = checkWinning();
                                 if (moveCounter == (rows * rows) - 1) {
                                     gameOver = true;
                                     tie = true;
                                 }
+
                                 if (!gameOver) {
                                     moveCounter++;
                                     swapPlayer();
-                                    textLabel.setText("Player " + Integer.toString(getRealPlayerNumber()) + "'s turn.");
+                                    textLabel.setText("Player " + getRealPlayerNumber() + "'s turn.");
                                 } else {
-                                    // logic for winning/playing again
+                                    // Display game over message
                                     if (tie) {
                                         textLabel.setText("Game Over! It's a tie!");
                                     } else {
-                                        textLabel.setText("Game Over! Player " + Integer.toString(getRealPlayerNumber()) + " won!");
+                                        textLabel.setText("Game Over! Player " + getRealPlayerNumber() + " won!");
                                     }
+
+                                    // Ask if the players want to play again
                                     boolean againAnswer = againDialog(frame);
                                     if (againAnswer) {
                                         moveCounter = 0;
@@ -118,6 +133,7 @@ public class TicTacToe {
         frame.setVisible(true);
     }
 
+    // Reset the logical board
     void clearLogicBoard() {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < rows; j++) {
@@ -126,6 +142,7 @@ public class TicTacToe {
         }
     }
 
+    // Reset the game board visuals
     void clearGameBoard() {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < rows; j++) {
@@ -135,67 +152,54 @@ public class TicTacToe {
         }
     }
 
+    // Swap the current player
     void swapPlayer() {
         currentPlayer *= -1;
     }
 
+    // Get the real player number (1 or 2)
     int getRealPlayerNumber() {
-        if (currentPlayer == -1) {
-            return 2;
-        } else {
-            return 1;
-        }
+        return currentPlayer == -1 ? 2 : 1;
     }
 
+    // Check if a player has won
     boolean checkWinning() {
-        // check columns
+        // Check rows and columns
         for (int i = 0; i < rows; i++) {
-            int checkSum = 0;
+            int rowSum = 0, colSum = 0;
             for (int j = 0; j < rows; j++) {
-                checkSum += logicBoard[i][j];
+                rowSum += logicBoard[i][j];
+                colSum += logicBoard[j][i];
             }
-            if (Math.abs(checkSum) == rows) {
+            if (Math.abs(rowSum) == rows || Math.abs(colSum) == rows) {
                 return true;
             }
         }
-        // check rows
+
+        // Check diagonals
+        int mainDiag = 0, antiDiag = 0;
         for (int i = 0; i < rows; i++) {
-            int checkSum = 0;
-            for (int j = 0; j < rows; j++) {
-                checkSum += logicBoard[j][i];
-            }
-            if (Math.abs(checkSum) == rows) {
-                return true;
-            }
+            mainDiag += logicBoard[i][i];
+            antiDiag += logicBoard[i][rows - 1 - i];
         }
-        // check diagonals
-        int checkSum = 0;
-        for (int i = 0; i < rows; i++) {
-            checkSum += logicBoard[i][i];
-            if (Math.abs(checkSum) == rows) {
-                return true;
-            }
-        }
-        checkSum = 0;
-        int j = rows;
-        for (int i = 0; i < rows; i++) {
-            j--;
-            checkSum += logicBoard[i][j];
-            if (Math.abs(checkSum) == rows) {
-                return true;
-            }
-        }
-        return false;
+        return Math.abs(mainDiag) == rows || Math.abs(antiDiag) == rows;
     }
 
+    // Display a dialog asking if the players want to play again
     private static boolean againDialog(JFrame parent) {
         final boolean[] userChoice = {false};
 
         JDialog dialog = new JDialog(parent, "Confirmation", true);
         dialog.setSize(300, 150);
-        dialog.setLayout(new FlowLayout());
+        dialog.setLayout(new GridLayout(2, 1, 23, 23));
+        dialog.setFont(new Font("Arial Unicode MS", Font.BOLD, 32));
+
+        JPanel confirmButtonPanel = new JPanel();
+        confirmButtonPanel.setLayout(new FlowLayout());
 
         JLabel message = new JLabel("Play Again?");
+        message.setHorizontalAlignment(SwingConstants.CENTER);
+        message.setVerticalAlignment(SwingConstants.CENTER);
         dialog.add(message);
 
         JButton yesButton = new JButton("Yes");
@@ -211,13 +215,13 @@ public class TicTacToe {
             dialog.dispose();
         });
 
-        dialog.add(yesButton);
-        dialog.add(noButton);
+        confirmButtonPanel.add(yesButton);
+        confirmButtonPanel.add(noButton);
+        dialog.add(confirmButtonPanel);
 
         dialog.setLocationRelativeTo(parent);
         dialog.setVisible(true);
 
         return userChoice[0];
     }
-
 }
